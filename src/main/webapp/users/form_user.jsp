@@ -18,6 +18,9 @@
 				<form action="/facebook/users/save" method="GET">
 					<h1>${usuario eq null ? "Cadastro" : "Atualização"} de Usuário</h1>
 					
+					<input type="hidden"
+					name="user_id" value="${usuario.getId()}">
+					
 					<div class="mb-3">
 						<label for="user_name_id" class="form-label">
 							Nome Usuário

@@ -37,7 +37,13 @@ public class UsersController extends HttpServlet {
 			break;
 		}
 		case "/facebook/users/save": {
-			insertUsers(req);
+			String userIdStr = req.getParameter("user_id");
+			if (userIdStr == null || userIdStr == "") {
+				insertUsers(req);
+			} else {
+				int userId = Integer.parseInt(userIdStr);
+				updateUser(req, userId);
+			}		
 			
 			resp.sendRedirect("/facebook/users");
 			
@@ -81,18 +87,22 @@ public class UsersController extends HttpServlet {
 		
 	}
 	
+	private void updateUser (HttpServletRequest req, int userId) {
+		User user = fillUser(req, userId);
+				
+		// Criar um UserDAO e atualiza o user
+		UserDAO userDAO = DAOFactory.createDAO(UserDAO.class);
+				
+		try {
+			userDAO.update(user);
+		} catch (ModelException e) {
+			// Log no servidor
+			e.printStackTrace();
+		}
+	}
+	
 	private void insertUsers(HttpServletRequest req) {
-		// Recuperar os dados do form
-		String userName = req.getParameter("user_name");
-		String userGender = req.getParameter("user_gender");
-		String userEmail = req.getParameter("user_email");
-		
-		// Criar um User a partir dos dados do form
-		User user = new User();
-		user.setName(userName);
-		user.setGender(userGender);
-		user.setEmail(userEmail);
-		user.setPassword("");
+		User user = fillUser(req, null);
 		
 		// Criar um UserDAO e persistir o user
 		UserDAO userDAO = DAOFactory.createDAO(UserDAO.class);
@@ -103,6 +113,27 @@ public class UsersController extends HttpServlet {
 			// Log no servidor
 			e.printStackTrace();
 		}
+	}
+	
+	private User fillUser(HttpServletRequest req, Integer userId) {
+		// Recuperar os dados do form
+		String userName = req.getParameter("user_name");
+		String userGender = req.getParameter("user_gender");
+		String userEmail = req.getParameter("user_email");
+		
+		// Atualiza um User a partir dos dados do form
+		User user;
+		if(userId == null) 
+			user = new User();
+		else
+			user = new User(userId);
+		
+		user.setName(userName);
+		user.setGender(userGender);
+		user.setEmail(userEmail);
+		user.setPassword("");
+				
+		return user;
 	}
 	
 	private void loadUsers(HttpServletRequest req) {
